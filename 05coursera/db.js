@@ -13,7 +13,7 @@ const userSchema = new Schema({
 const adminSchema = new Schema({
     email: { type:String, unique: true},
     password: String,
-    firstname: String,
+    firstName: String,
     lastName: String
 });
 
@@ -22,7 +22,7 @@ const courseSchema = new Schema({
     description: String,
     price: Number,
     imageUrl: String,
-    ObjectId: ObjectId
+    createOrId: ObjectId
 });
 
 const purchaseSchema = new Schema({

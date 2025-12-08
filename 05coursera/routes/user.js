@@ -1,18 +1,19 @@
 const { Router } = require('express')
 const userRouter = Router()
-const { userModel} = require('../db')
+const { userModel, purchaseModel, courseModel} = require('../db')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
 const { z } = require('zod')
 
-const jwt_secret = '123456789'
+const {JWT_USER_PASSWORD} = require('../config') 
+const { userMiddleware } = require('../middleware/user.js')
 
 
 
 userRouter.post('/signup', async function(req,res){
     const requireBody = z.object({
         email: z.string().min(5).max(50).email(),
-        password: z.string().min(8).max(12),
+        password: z.string().min(5).max(12),
         firstName: z.string().min(3).max(16),
         lastName: z.string().min(3).max(17)
     })
@@ -20,7 +21,7 @@ userRouter.post('/signup', async function(req,res){
     const parseDataWithSuccess = requireBody.safeParse(req.body);
     if(!parseDataWithSuccess.success){
         return res.status(400).json({
-            message: 'Incorrect formate'
+            message: 'Incorrect format'
         })
     }
 
@@ -49,7 +50,7 @@ userRouter.post('/signin', async function(req,res){
     if(user && passwordMatch){
         const token = jwt.sign({
             id: user._id.toString()
-        }, jwt_secret)
+        }, JWT_USER_PASSWORD)
         res.json({
         token: token
     })
@@ -58,6 +59,29 @@ userRouter.post('/signin', async function(req,res){
             message: "password Inccorect"
         })
     }
+})
+
+userRouter.get('/purchases', userMiddleware, async function(req,res){
+    const userId = req.userId;
+    
+    // Logic for purchasing a course would go here
+    const purchases = await purchaseModel.find({
+        userId,
+    });
+     let purchasedCourseIds = [];
+
+    for (let i = 0; i<purchases.length;i++){ 
+        purchasedCourseIds.push(purchases[i].courseId)
+    }
+
+    const coursesData = await courseModel.find({
+        _id: { $in: purchasedCourseIds }
+    })
+
+    res.json({
+        purchases,
+        coursesData
+    })
 })
 
 module.exports = {
