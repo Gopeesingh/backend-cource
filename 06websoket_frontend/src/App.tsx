@@ -89,7 +89,7 @@ function App() {
         payload: { message }
       })
     )
-
+   //@ts-ignore
     inputRef.current.value = ""
     setIsTyping(true)
     setTimeout(() => setIsTyping(false), 3000)
